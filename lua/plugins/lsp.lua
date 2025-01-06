@@ -11,6 +11,9 @@ return {
         },
       },
     },
+    format = {
+      timeout_ms = 60000,
+    },
     -- setup = {
     --   eslint = function()
     --     require("lazyvim.util").lsp.on_attach(function(client)
