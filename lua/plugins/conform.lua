@@ -1,5 +1,11 @@
 local util = require("conform.util")
 
+-- local function use_oxlint()
+--   return vim.fs.find({ "oxlintrc.json", ".oxlintrc.json" }, { upward = true })[1] ~= nil
+-- end
+-- local jsLinter = use_oxlint() and "oxlint" or "eslint_d"
+local jsLinter = "eslint_d"
+
 return {
   {
     "stevearc/conform.nvim",
@@ -18,17 +24,10 @@ return {
           }),
         },
       },
-      -- formatters = {
-      --   eslint_d = {
-      --     env = {
-      --       ESLINT_USE_FLAT_CONFIG = true,
-      --     },
-      --   },
-      -- },
       formatters_by_ft = {
-        vue = { "eslint_d", "prettierd" },
-        javascript = { "eslint_d", "prettierd" },
-        typescript = { "eslint_d", "prettierd" },
+        vue = { jsLinter, "oxfmt" },
+        javascript = { jsLinter, "oxfmt" },
+        typescript = { jsLinter, "oxfmt" },
         markdown = { "textlint" },
       },
       lsp_fallback = "always",
