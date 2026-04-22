@@ -14,5 +14,6 @@ return {
   },
   config = function()
     vim.cmd([[do FileType]])
+    vim.g.mkdp_markdown_css = vim.fn.stdpath("config") .. "/lua/plugins/markdown.css"
   end,
 }
