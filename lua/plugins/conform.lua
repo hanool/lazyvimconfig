@@ -2,6 +2,12 @@ local util = require("conform.util")
 local uv = vim.uv or vim.loop
 
 local home = uv.os_homedir()
+local oxfmt_command = util.from_node_modules("oxfmt")
+local oxlint_command = util.from_node_modules("oxlint")
+
+-- npm's Oxc launchers can spawn a native child process. Running them through
+-- `timeout` ensures the whole command group is terminated if Conform or Neovim exits.
+local OXC_TIMEOUT_ARGS = { "--signal=TERM", "--kill-after=1s", "3s" }
 
 local OXFMT_PROJECT_CONFIGS = {
   ".oxfmtrc.json",
@@ -60,6 +66,18 @@ local function with_optional_config(args, config)
   return vim.list_extend({ "--config", config }, args)
 end
 
+local function with_process_timeout(command, args)
+  local timeout_args = vim.deepcopy(OXC_TIMEOUT_ARGS)
+  vim.list_extend(timeout_args, { command })
+  return vim.list_extend(timeout_args, args)
+end
+
+local function command_is_available(resolve_command)
+  return function(config, ctx)
+    return vim.fn.executable(resolve_command(config, ctx)) == 1
+  end
+end
+
 local jsLinter = "oxlint"
 
 return {
@@ -80,15 +98,25 @@ return {
           }),
         },
         oxfmt = {
-          args = function(_, ctx)
-            local config = find_oxc_config(ctx, OXFMT_PROJECT_CONFIGS, OXFMT_GLOBAL_CONFIGS)
-            return with_optional_config({ "--stdin-filepath", "$FILENAME" }, config)
+          command = "timeout",
+          condition = command_is_available(oxfmt_command),
+          args = function(config, ctx)
+            local oxfmt_args = with_optional_config(
+              { "--stdin-filepath", "$FILENAME" },
+              find_oxc_config(ctx, OXFMT_PROJECT_CONFIGS, OXFMT_GLOBAL_CONFIGS)
+            )
+            return with_process_timeout(oxfmt_command(config, ctx), oxfmt_args)
           end,
         },
         oxlint = {
-          args = function(_, ctx)
-            local config = find_oxc_config(ctx, OXLINT_PROJECT_CONFIGS, OXLINT_GLOBAL_CONFIGS)
-            return with_optional_config({ "--fix", "$FILENAME" }, config)
+          command = "timeout",
+          condition = command_is_available(oxlint_command),
+          args = function(config, ctx)
+            local oxlint_args = with_optional_config(
+              { "--fix", "$FILENAME" },
+              find_oxc_config(ctx, OXLINT_PROJECT_CONFIGS, OXLINT_GLOBAL_CONFIGS)
+            )
+            return with_process_timeout(oxlint_command(config, ctx), oxlint_args)
           end,
         },
       },
