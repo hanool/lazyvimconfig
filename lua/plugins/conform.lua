@@ -86,17 +86,22 @@ return {
     opts = {
       log_level = vim.log.levels.DEBUG,
       formatters = {
-        textlint = {
-          meta = {
-            url = "https://github.com/textlint/textlint",
-            description = "The pluggable linting tool for text and markdown.",
-          },
-          command = util.from_node_modules("textlint"),
-          args = { "--stdin", "--stdin-filename", "$FILENAME" },
-          cwd = util.root_file({
-            "package.json",
-          }),
-        },
+        -- textlint = {
+        --   meta = {
+        --     url = "https://github.com/textlint/textlint",
+        --     description = "The pluggable linting tool for text and markdown.",
+        --   },
+        --   command = util.from_node_modules("textlint"),
+        --   args = { "--fix", "--format", "fixed-result", "--stdin", "--stdin-filename", "$FILENAME" },
+        --   cwd = util.root_file({
+        --     ".textlintrc",
+        --     ".textlintrc.json",
+        --     ".textlintrc.js",
+        --     ".textlintrc.cjs",
+        --     ".textlintrc.yml",
+        --     ".textlintrc.yaml",
+        --   }),
+        -- },
         oxfmt = {
           command = "timeout",
           condition = command_is_available(oxfmt_command),
@@ -124,7 +129,7 @@ return {
         vue = { jsLinter, "oxfmt" },
         javascript = { jsLinter, "oxfmt" },
         typescript = { jsLinter, "oxfmt" },
-        markdown = { "textlint" },
+        -- markdown = { "textlint" },
       },
       lsp_fallback = "always",
     },
